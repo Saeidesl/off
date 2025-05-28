@@ -2,42 +2,65 @@
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>فرم مرخصی</title>
+  <title>درخواست مرخصی</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- jQuery -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-
-  <!-- Persian Datepicker (Mds) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/md.bootstrappersiandatetimepicker@0.3.8/dist/jquery.md.bootstrap.datetimepicker.style.css" />
-  <script src="https://cdn.jsdelivr.net/npm/md.bootstrappersiandatetimepicker@0.3.8/dist/jquery.md.bootstrap.datetimepicker.min.js"></script>
 
   <style>
     body {
       font-family: sans-serif;
-      background: #f1f1f1;
-    }
-    .container {
-      max-width: 500px;
-      margin: 40px auto;
-      background: white;
+      background-color: #f9f9f9;
       padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      direction: rtl;
     }
-    label {
-      margin-top: 15px;
-      display: block;
+
+    .tabs {
+      display: flex;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      background: #e0e0e0;
+      cursor: pointer;
+      border-radius: 10px 10px 0 0;
       font-weight: bold;
     }
+
+    .tab.active {
+      background: #ffffff;
+      border-bottom: 2px solid white;
+    }
+
+    .tab-content {
+      display: none;
+      background: white;
+      padding: 20px;
+      border-radius: 0 0 12px 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
     input, select, textarea {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
+      font-size: 15px;
       border: 1px solid #ccc;
       border-radius: 8px;
-      font-size: 15px;
+      box-sizing: border-box;
     }
+
     button {
       margin-top: 20px;
       width: 100%;
@@ -49,82 +72,257 @@
       border-radius: 10px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #218838;
+
+    .success { color: green; text-align: center; margin-top: 10px; }
+    .error { color: red; text-align: center; margin-top: 10px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
     }
-    .success {
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
       text-align: center;
-      margin-top: 10px;
-      color: green;
+    }
+
+    th {
+      background-color: #f0f0f0;
+    }
+
+    /* استایل‌های جدید برای انیمیشن‌ها */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.8);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 15px;
+    }
+
+    .loading-text {
+      font-size: 18px;
+      color: #333;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .submit-loading {
+      position: relative;
+    }
+
+    .submit-loading::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+
+    .submit-loading.loading::after {
+      display: block;
+    }
+
+    .submit-loading.loading {
+      color: transparent;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2 style="text-align:center;">فرم درخواست مرخصی</h2>
+<!-- Overlay برای بارگذاری اولیه -->
+<div id="initialLoading" class="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">در حال دریافت اطلاعات...</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('formTab')">فرم درخواست</div>
+  <div class="tab" onclick="switchTab('viewTab')">مشاهده مرخصی</div>
+</div>
+
+<div id="formTab" class="tab-content active">
   <form id="leaveForm">
-    <label>نام و نام خانوادگی</label>
-    <input type="text" name="fullName" required>
+    <label for="fullName">نام و نام خانوادگی</label>
+    <select id="fullName" name="fullName" required></select>
 
-    <label>قسمت محل اشتغال</label>
-    <input type="text" name="department" required>
-
-    <label>نوع مرخصی</label>
-    <select name="leaveType" required>
-      <option value="">انتخاب نوع</option>
+    <label for="leaveType">نوع مرخصی</label>
+    <select id="leaveType" name="leaveType" required>
+      <option value="">انتخاب کنید</option>
       <option value="استحقاقی">استحقاقی</option>
       <option value="استعلاجی">استعلاجی</option>
       <option value="بدون حقوق">بدون حقوق</option>
       <option value="ساعتی">ساعتی</option>
     </select>
 
-    <label>تاریخ مرخصی</label>
-    <input type="text" id="datePicker" name="date" readonly required>
+    <label for="fromDate">از تاریخ</label>
+    <input type="text" id="fromDate" name="fromDate" required placeholder="مثال: 1403/03/10">
 
-    <label>ساعت</label>
-    <input type="time" name="time" required>
+    <label for="toDate">تا تاریخ</label>
+    <input type="text" id="toDate" name="toDate" required placeholder="مثال: 1403/03/12">
 
-    <label>توضیحات</label>
-    <textarea name="description"></textarea>
+    <label for="time">ساعت</label>
+    <input type="time" id="time" name="time">
 
-    <button type="submit">ارسال</button>
-    <div class="success" id="resultMsg"></div>
+    <label for="description">توضیحات</label>
+    <textarea id="description" name="description" rows="4"></textarea>
+
+    <button type="submit" id="submitBtn" class="submit-loading">ارسال</button>
+    <div class="success" id="successMsg"></div>
+    <div class="error" id="errorMsg"></div>
   </form>
 </div>
 
+<div id="viewTab" class="tab-content">
+  <label for="personName">نام پرسنل</label>
+  <select id="personName"></select>
+  <button onclick="fetchLeaves()">نمایش مرخصی‌ها</button>
+  <table id="leaveTable">
+    <thead>
+      <tr><th>از</th><th>تا</th><th>ساعت</th><th>نوع</th><th>توضیحات</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
 <script>
-  $(document).ready(function () {
-    $('#datePicker').MdPersianDateTimePicker({
-      targetTextSelector: '#datePicker',
-      textFormat: 'yyyy/MM/dd',
-      isGregorian: false,
-      enableTimePicker: false,
-      englishNumber: false
+  const scriptURL = "https://script.google.com/macros/s/AKfycbx8w8NS-98y3BwLhnXovyGfUIglEx6dephb_PXPENQjfln4qoCpZS5MmRX0LDImwi7Log/exec";
+
+  function switchTab(id) {
+    document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+    document.querySelector(`.tab[onclick*="${id}"]`).classList.add('active');
+    document.getElementById(id).classList.add('active');
+  }
+
+  function setLoadingState() {
+    const loadingOption = document.createElement("option");
+    loadingOption.text = "در حال دریافت...";
+    loadingOption.disabled = true;
+    loadingOption.selected = true;
+
+    ["fullName", "personName"].forEach(id => {
+      const select = document.getElementById(id);
+      select.innerHTML = "";
+      select.appendChild(loadingOption.cloneNode(true));
     });
+  }
 
-    $("#leaveForm").on("submit", function (e) {
-      e.preventDefault();
-
-      const formData = new FormData(this);
-      const data = Object.fromEntries(formData.entries());
-
-      fetch("YOUR_WEB_APP_URL", {
-        method: "POST",
-        body: JSON.stringify(data)
-      }).then(res => {
-        if (res.ok) {
-          $("#resultMsg").text("درخواست با موفقیت ثبت شد.");
-          this.reset();
-        } else {
-          $("#resultMsg").text("خطا در ثبت اطلاعات.");
-        }
-      }).catch(() => {
-        $("#resultMsg").text("اتصال به سرور ممکن نیست.");
+  function loadNames() {
+    fetch(scriptURL + "?action=getNames")
+      .then(res => res.json())
+      .then(names => {
+        const selects = [document.getElementById("fullName"), document.getElementById("personName")];
+        selects.forEach(select => {
+          select.innerHTML = "";
+          names.forEach(name => {
+            const option = document.createElement("option");
+            option.value = option.textContent = name;
+            select.appendChild(option);
+          });
+        });
+        // مخفی کردن انیمیشن بارگذاری اولیه
+        document.getElementById("initialLoading").style.display = "none";
+      })
+      .catch(() => {
+        const selects = [document.getElementById("fullName"), document.getElementById("personName")];
+        selects.forEach(select => {
+          select.innerHTML = "<option>خطا در دریافت نام‌ها</option>";
+        });
+        // مخفی کردن انیمیشن بارگذاری اولیه حتی در صورت خطا
+        document.getElementById("initialLoading").style.display = "none";
       });
+  }
+
+  document.getElementById("leaveForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const form = e.target;
+    const submitBtn = document.getElementById("submitBtn");
+    const successMsg = document.getElementById("successMsg");
+    const errorMsg = document.getElementById("errorMsg");
+    
+    // نمایش انیمیشن ثبت
+    submitBtn.classList.add("loading");
+    successMsg.textContent = "";
+    errorMsg.textContent = "";
+
+    const data = {
+      fullName: form.fullName.value,
+      leaveType: form.leaveType.value,
+      fromDate: form.fromDate.value,
+      toDate: form.toDate.value,
+      time: form.time.value,
+      description: form.description.value
+    };
+
+    fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify(data)
+    })
+    .then(res => res.text())
+    .then(response => {
+      submitBtn.classList.remove("loading");
+      if (response.includes("ثبت شد")) {
+        successMsg.textContent = "✅ ثبت با موفقیت انجام شد.";
+        errorMsg.textContent = "";
+        form.reset();
+      } else {
+        errorMsg.textContent = "❌ خطا در ثبت.";
+        successMsg.textContent = "";
+      }
+    })
+    .catch(() => {
+      submitBtn.classList.remove("loading");
+      errorMsg.textContent = "⛔️ خطای اتصال به سرور.";
     });
   });
-</script>
 
+  function fetchLeaves() {
+    const person = document.getElementById("personName").value;
+    fetch(`${scriptURL}?action=getLeaves&name=${encodeURIComponent(person)}`)
+      .then(res => res.json())
+      .then(rows => {
+        const tbody = document.querySelector("#leaveTable tbody");
+        tbody.innerHTML = "";
+        rows.forEach(row => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td><td>${row[4]}</td>`;
+          tbody.appendChild(tr);
+        });
+      });
+  }
+
+  window.onload = () => {
+    setLoadingState();
+    loadNames();
+  };
+</script>
 </body>
 </html>
