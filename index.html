@@ -238,18 +238,7 @@
     document.getElementById(id).classList.add('active');
   }
 
-  function setLoadingState() {
-    const loadingOption = document.createElement("option");
-    loadingOption.text = "در حال دریافت...";
-    loadingOption.disabled = true;
-    loadingOption.selected = true;
-
-    ["fullName", "personName"].forEach(id => {
-      const select = document.getElementById(id);
-      select.innerHTML = "";
-      select.appendChild(loadingOption.cloneNode(true));
-    });
-  }
+  
 
   function loadNames() {
     fetch(scriptURL + "?action=getNames")
@@ -320,22 +309,19 @@
     });
   });
 
-  
-function fetchLeaves() {
+  function fetchLeaves() {
   const person = document.getElementById("personName").value;
   fetch(`${scriptURL}?action=getLeaves&name=${encodeURIComponent(person)}`)
     .then(res => res.json())
     .then(rows => {
       const container = document.getElementById("leaveCards");
       container.innerHTML = "";
-
       rows.forEach(row => {
-        const startDate = formatDate(row[0]);
-        const endDate = formatDate(row[1]);
+        const startDate = formatDateForDisplay(row[0]);
+const endDate = formatDateForDisplay(row[1]);
         const duration = row[2];
         const type = row[3];
         const desc = row[4];
-
         const card = document.createElement("div");
         card.className = "leave-card";
         card.innerHTML = `
@@ -350,7 +336,7 @@ function fetchLeaves() {
     });
 }
 
-function formatDate(isoDate) {
+function formatDateForDisplay(isoDate) {
   const d = new Date(isoDate);
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -377,7 +363,6 @@ function formatDate(input) {
 
 
   window.onload = () => {
-    setLoadingState();
     loadNames();
   };
 </script>
